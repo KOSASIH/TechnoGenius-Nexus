@@ -218,3 +218,47 @@ The `Policy` class represents a neural network that outputs a probability distri
 The agent is trained for a specified number of episodes, with each episode consisting of interacting with the environment, collecting rewards, log probabilities, and values, and updating the policy using the PPO algorithm. After training, the agent can be tested by selecting actions based on the learned policy and rendering the environment.
 
 Note: Please make sure to install the required dependencies (e.g., OpenAI Gym, PyTorch) and run the code in an appropriate environment.
+
+```python
+# Import the necessary libraries
+import torch
+import torchaudio
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Tokenizer
+
+# Load the pre-trained model and tokenizer
+model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
+tokenizer = Wav2Vec2Tokenizer.from_pretrained("facebook/wav2vec2-base-960h")
+
+# Define a function to transcribe speech to text
+def transcribe_speech(audio_file_path):
+    # Load the audio file
+    waveform, sample_rate = torchaudio.load(audio_file_path)
+    
+    # Preprocess the audio waveform
+    input_values = tokenizer(waveform, return_tensors="pt").input_values
+    
+    # Perform speech recognition
+    with torch.no_grad():
+        logits = model(input_values).logits
+    
+    # Decode the predicted tokens
+    predicted_ids = torch.argmax(logits, dim=-1)
+    transcription = tokenizer.batch_decode(predicted_ids)[0]
+    
+    return transcription
+
+# Example usage
+audio_file_path = "path/to/audio.wav"
+transcription = transcribe_speech(audio_file_path)
+print(transcription)
+```
+
+In the above code, we first import the necessary libraries, including `torch` for deep learning, `torchaudio` for audio processing, and `transformers` for the Wav2Vec2 model and tokenizer.
+
+We then load the pre-trained Wav2Vec2 model and tokenizer using their respective `from_pretrained` methods.
+
+Next, we define a function `transcribe_speech` that takes an audio file path as input. Inside this function, we load the audio file using `torchaudio.load` and preprocess the waveform using the tokenizer.
+
+We then pass the preprocessed input to the Wav2Vec2 model and obtain the logits. The predicted tokens are obtained by taking the argmax along the last dimension of the logits. Finally, we decode the predicted tokens using the tokenizer's `batch_decode` method to obtain the transcription.
+
+To use the speech recognition system, you can call the `transcribe_speech` function with the path to your audio file and it will return the transcribed text.
