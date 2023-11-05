@@ -262,3 +262,134 @@ Next, we define a function `transcribe_speech` that takes an audio file path as 
 We then pass the preprocessed input to the Wav2Vec2 model and obtain the logits. The predicted tokens are obtained by taking the argmax along the last dimension of the logits. Finally, we decode the predicted tokens using the tokenizer's `batch_decode` method to obtain the transcription.
 
 To use the speech recognition system, you can call the `transcribe_speech` function with the path to your audio file and it will return the transcribed text.
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+from torchvision.utils import save_image
+import numpy as np
+
+# Define the generator architecture for DCGAN
+class Generator(nn.Module):
+    def __init__(self, latent_dim, img_shape):
+        super(Generator, self).__init__()
+        self.img_shape = img_shape
+
+        self.model = nn.Sequential(
+            nn.Linear(latent_dim, 128),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(128, 256),
+            nn.BatchNorm1d(256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(256, 512),
+            nn.BatchNorm1d(512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(512, 1024),
+            nn.BatchNorm1d(1024),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(1024, int(np.prod(img_shape))),
+            nn.Tanh()
+        )
+
+    def forward(self, z):
+        img = self.model(z)
+        img = img.view(img.size(0), *self.img_shape)
+        return img
+
+# Define the discriminator architecture for DCGAN
+class Discriminator(nn.Module):
+    def __init__(self, img_shape):
+        super(Discriminator, self).__init__()
+        self.img_shape = img_shape
+
+        self.model = nn.Sequential(
+            nn.Linear(int(np.prod(img_shape)), 512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(256, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, img):
+        img_flat = img.view(img.size(0), -1)
+        validity = self.model(img_flat)
+        return validity
+
+# Define the training loop for DCGAN
+def train_dcgan(generator, discriminator, dataloader, num_epochs, latent_dim, device):
+    adversarial_loss = nn.BCELoss()
+    generator.to(device)
+    discriminator.to(device)
+    optimizer_G = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+
+    for epoch in range(num_epochs):
+        for i, (imgs, _) in enumerate(dataloader):
+            batch_size = imgs.shape[0]
+            real_imgs = imgs.to(device)
+            valid = torch.ones(batch_size, 1).to(device)
+            fake = torch.zeros(batch_size, 1).to(device)
+
+            # Train Generator
+            optimizer_G.zero_grad()
+            z = torch.randn(batch_size, latent_dim).to(device)
+            gen_imgs = generator(z)
+            g_loss = adversarial_loss(discriminator(gen_imgs), valid)
+            g_loss.backward()
+            optimizer_G.step()
+
+            # Train Discriminator
+            optimizer_D.zero_grad()
+            real_loss = adversarial_loss(discriminator(real_imgs), valid)
+            fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake)
+            d_loss = (real_loss + fake_loss) / 2
+            d_loss.backward()
+            optimizer_D.step()
+
+            if i % 100 == 0:
+                print(
+                    "[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f]"
+                    % (epoch, num_epochs, i, len(dataloader), d_loss.item(), g_loss.item())
+                )
+
+        if epoch % 10 == 0:
+            save_image(gen_imgs.data[:25], "images/%d.png" % epoch, nrow=5, normalize=True)
+
+# Set random seed for reproducibility
+torch.manual_seed(42)
+
+# Set device (GPU if available, else CPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Define the parameters
+latent_dim = 100
+img_shape = (1, 28, 28)
+num_epochs = 200
+batch_size = 64
+
+# Load the MNIST dataset
+transform = transforms.Compose(
+    [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+)
+dataset = datasets.MNIST(root="data", train=True, transform=transform, download=True)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+# Initialize the generator and discriminator
+generator = Generator(latent_dim, img_shape)
+discriminator = Discriminator(img_shape)
+
+# Train the DCGAN model
+train_dcgan(generator, discriminator, dataloader, num_epochs, latent_dim, device)
+```
+
+This code implements a DCGAN (Deep Convolutional Generative Adversarial Network) using PyTorch. The DCGAN consists of a generator and a discriminator. The generator generates fake images, while the discriminator tries to distinguish between real and fake images. The generator and discriminator are trained simultaneously in an adversarial manner.
+
+The code defines the Generator and Discriminator classes, which specify the architecture of the generator and discriminator networks. The `train_dcgan` function trains the DCGAN model using the provided dataloader and the specified number of epochs.
+
+To use this code, you need to have PyTorch installed. You can adjust the parameters (such as the latent dimension, image shape, number of epochs, and batch size) according to your requirements. The generated images will be saved in the "images" directory.
+
+Note: This code assumes that you have a dataset available. In this example, the MNIST dataset is used, but you can replace it with your own dataset by modifying the data loading part of the code.
