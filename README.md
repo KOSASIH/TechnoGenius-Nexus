@@ -45,3 +45,52 @@ print(answer)
 This code demonstrates the implementation of a natural language processing (NLP) module using the BERT model. It includes a function `generate_summary_or_answer` that takes in a text input and an optional question. If a question is provided, it uses the BERT model to generate an answer based on the content of the text. If no question is provided, it uses the Hugging Face `summarization` pipeline to generate a summary of the text.
 
 The example usage shows how to use the `generate_summary_or_answer` function to generate a summary and answer a question based on the given text. The summary and answer are then printed to the console.
+
+```python
+import torch
+import torchvision.models as models
+import torchvision.transforms as transforms
+from PIL import Image
+
+# Load pre-trained ResNet model
+model = models.resnet50(pretrained=True)
+model.eval()
+
+# Define the image pre-processing transformation
+preprocess = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Function to perform image classification
+def classify_image(image_path):
+    # Load and pre-process the image
+    image = Image.open(image_path)
+    image = preprocess(image)
+    image = image.unsqueeze(0)  # Add batch dimension
+
+    # Perform inference
+    with torch.no_grad():
+        output = model(image)
+
+    # Get the predicted class label
+    _, predicted_idx = torch.max(output, 1)
+    predicted_label = predicted_idx.item()
+
+    return predicted_label
+
+# Example usage
+image_path = 'path/to/your/image.jpg'
+predicted_label = classify_image(image_path)
+print(f"Predicted label: {predicted_label}")
+```
+
+In the above code, we first import the necessary libraries including `torch` for deep learning, `torchvision` for pre-trained models, `transforms` for image pre-processing, and `PIL` for image loading. We then load the pre-trained ResNet-50 model and set it to evaluation mode.
+
+Next, we define a transformation pipeline using `transforms.Compose` to resize and normalize the input image. The `preprocess` object will be used to preprocess the input image before feeding it to the model.
+
+The `classify_image` function takes an image path as input, loads the image, applies the pre-processing transformation, and performs inference using the ResNet-50 model. The predicted class label is obtained by finding the index of the maximum output value from the model's output tensor.
+
+Finally, we provide an example usage where you can replace `'path/to/your/image.jpg'` with the actual path to your image file. The predicted label is then printed as output.
