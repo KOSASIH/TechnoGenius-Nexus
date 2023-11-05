@@ -393,3 +393,55 @@ The code defines the Generator and Discriminator classes, which specify the arch
 To use this code, you need to have PyTorch installed. You can adjust the parameters (such as the latent dimension, image shape, number of epochs, and batch size) according to your requirements. The generated images will be saved in the "images" directory.
 
 Note: This code assumes that you have a dataset available. In this example, the MNIST dataset is used, but you can replace it with your own dataset by modifying the data loading part of the code.
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load user-item rating data
+ratings_data = pd.read_csv('ratings.csv')
+
+# Load item metadata
+items_data = pd.read_csv('items.csv')
+
+# Create user-item matrix
+user_item_matrix = ratings_data.pivot(index='user_id', columns='item_id', values='rating').fillna(0)
+
+# Compute item-item similarity matrix using cosine similarity
+item_similarity = cosine_similarity(user_item_matrix.T)
+
+def recommend_items(user_id, top_n=5):
+    # Get the user's ratings
+    user_ratings = user_item_matrix.loc[user_id]
+
+    # Compute the weighted average of item similarities with user's ratings
+    item_scores = np.dot(item_similarity, user_ratings)
+
+    # Sort the items based on scores
+    top_items = sorted(enumerate(item_scores), key=lambda x: x[1], reverse=True)[:top_n]
+
+    # Get the item ids of top recommended items
+    top_item_ids = [item[0] for item in top_items]
+
+    # Get the item names of top recommended items
+    top_item_names = items_data.loc[items_data['item_id'].isin(top_item_ids), 'item_name']
+
+    return top_item_names
+
+# Example usage
+user_id = 1
+top_n = 5
+recommended_items = recommend_items(user_id, top_n)
+print(recommended_items)
+```
+
+This code demonstrates the implementation of a recommendation system using collaborative filtering. It assumes that you have two CSV files: 'ratings.csv' containing user-item rating data and 'items.csv' containing item metadata.
+
+The code first loads the rating data and item metadata into pandas DataFrames. It then creates a user-item matrix from the rating data, where each row represents a user and each column represents an item, with the values being the ratings given by users to items. Any missing ratings are filled with zeros.
+
+Next, it computes the item-item similarity matrix using cosine similarity. This matrix measures the similarity between items based on the ratings given by users. A higher similarity score indicates that two items are more similar.
+
+The `recommend_items` function takes a user id and the number of top items to recommend as input. It retrieves the user's ratings from the user-item matrix, computes the weighted average of item similarities with the user's ratings, and sorts the items based on the scores. Finally, it returns the names of the top recommended items.
+
+In the example usage, the code recommends the top 5 items for user 1 and prints their names. You can modify the user id and the number of top items to customize the recommendations.
