@@ -7,7 +7,8 @@ Uniting cutting-edge technologies to create an AI agent capable of solving compl
 - [Vision And Mission](#vision-and-mission)
 - [Technologies](#technologies)
 - [Problems To Solve](#problems-to-solve)
-- [Guide](#guide) 
+- [Guide](#guide)
+- [Contributor Guide](#contributor-guide) 
 
 # Description 
 
@@ -537,3 +538,70 @@ Next, it computes the item-item similarity matrix using cosine similarity. This 
 The `recommend_items` function takes a user id and the number of top items to recommend as input. It retrieves the user's ratings from the user-item matrix, computes the weighted average of item similarities with the user's ratings, and sorts the items based on the scores. Finally, it returns the names of the top recommended items.
 
 In the example usage, the code recommends the top 5 items for user 1 and prints their names. You can modify the user id and the number of top items to customize the recommendations.
+
+# Contributor Guide 
+
+---
+
+## TechnoGenius Nexus Repository Contributor Guide
+
+### Welcome, Contributors!
+
+Thank you for considering contributing to TechnoGenius Nexus. Your contributions are valuable in driving innovation and advancements within our AI ecosystem. This guide will assist you in becoming a contributor to our repository.
+
+### How to Contribute
+
+1. **Fork the Repository**: Fork the TechnoGenius Nexus repository to your GitHub account.
+
+2. **Clone the Repository**: Clone the forked repository to your local machine.
+
+   ```bash
+   git clone https://github.com/KOSASIH/TechnoGenius-Nexus.git
+   ```
+
+3. **Create a Branch**: Create a new branch for your work.
+
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+4. **Work on Your Contribution**: Make your changes or additions to the codebase, ensuring they adhere to the repository's guidelines and coding standards.
+
+5. **Commit Changes**: Once your modifications are complete, commit the changes to your branch.
+
+   ```bash
+   git add .
+   git commit -m "Description of your changes"
+   ```
+
+6. **Push Changes**: Push your branch to your GitHub repository.
+
+   ```bash
+   git push origin feature/your-feature
+   ```
+
+7. **Submit a Pull Request**: Navigate to the original TechnoGenius Nexus repository on GitHub and submit a pull request, describing the changes you've made and the issues they resolve. Please ensure your pull request aligns with the project's contribution guidelines.
+
+### Contribution Guidelines
+
+- Please adhere to the project's coding style and guidelines.
+- Ensure your commits are clear, concise, and accompanied by informative commit messages.
+- Include tests and documentation for any new features or fixes.
+- Pull requests will be reviewed by project maintainers before merging.
+
+### Code of Conduct
+
+To maintain a positive and inclusive environment, all contributors are required to adhere to our Code of Conduct. Please review and follow it in all interactions related to TechnoGenius Nexus.
+
+### Get Help
+
+If you need assistance or have questions, feel free to open an issue or contact the project maintainers for guidance.
+
+### Recognition
+
+We value the contributions of all contributors and recognize your efforts. Your name will be added to the list of contributors.
+
+Thank you for considering contributing to TechnoGenius Nexus!
+
+---
+
